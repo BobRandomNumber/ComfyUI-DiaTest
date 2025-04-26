@@ -1,6 +1,8 @@
 # ComfyUI DiaTest TTS Node
 
-This node pack integrates the [Nari Labs Dia](https://github.com/nari-labs/dia) text-to-speech model into ComfyUI using a single node for loading (onto GPU) and generation.
+Warning LLM Code there are probably better options
+
+This node pack partially integrates the [Nari Labs Dia](https://github.com/nari-labs/dia) text-to-speech model into ComfyUI using a single node for loading (onto GPU) and generation.
 
 Dia allows generating dialogue with speaker tags (`[S1]`, `[S2]`) and non-verbal sounds (`(laughs)`, etc.). This node loads the model from Hugging Face Hub and generates audio directly using float32 precision. It requires a CUDA-enabled GPU.
 
