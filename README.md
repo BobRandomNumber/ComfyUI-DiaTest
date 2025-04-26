@@ -3,6 +3,7 @@
 Warning LLM Code there are probably better options
 
 This node pack partially integrates the [Nari Labs Dia](https://github.com/nari-labs/dia) text-to-speech model into ComfyUI using a single node for loading (onto GPU) and generation.
+This is only text input, no audio input.
 
 Dia allows generating dialogue with speaker tags (`[S1]`, `[S2]`) and non-verbal sounds (`(laughs)`, etc.). This node loads the model from Hugging Face Hub and generates audio directly using float32 precision. It requires a CUDA-enabled GPU.
 
@@ -12,10 +13,9 @@ Dia allows generating dialogue with speaker tags (`[S1]`, `[S2]`) and non-verbal
 2.  Navigate to your `ComfyUI/custom_nodes/` directory.
 3.  Clone this repository:
     ```bash
-    git clone <repository_url> ComfyUI-DiaTest
+    git clone https://github.com/BobRandomNumber/ComfyUI-DiaTest.git
     ```
-    (Replace `<repository_url>` with the actual URL).
-    Alternatively, download the ZIP and extract it into `custom_nodes` as `ComfyUI-DiaTest`.
+    Alternatively, download the ZIP and extract it into `custom_nodes`.
 4.  Install the required dependencies:
     *   Activate ComfyUI's Python environment (e.g., `source ./venv/bin/activate`).
     *   Navigate to the node directory: `cd ComfyUI/custom_nodes/ComfyUI-DiaTest`
@@ -47,16 +47,14 @@ Loads the specified Dia model from Hugging Face Hub onto the GPU (if not already
 ## Usage Example
 
 1.  Add the `Dia TTS Generate` node from the `audio/DiaTest` category.
-2.  Configure the `repo_id` if needed.
-3.  Enter your dialogue script into the `text` input.
-4.  Adjust generation parameters (`cfg_scale`, `temperature`, `speed_factor`, etc.) as needed.
-5.  Connect the `audio` output to a `SaveAudio` or `PreviewAudio` node.
-6.  Queue the prompt.
+2.  Enter your dialogue script into the `text` input.
+3.  Adjust generation parameters (`cfg_scale`, `temperature`, `speed_factor`, etc.) as needed.
+4.  Connect the `audio` output to a `SaveAudio` or `PreviewAudio` node.
+5.  Queue the prompt.
 
 ## Notes
 
 *   This node **requires a CUDA-enabled GPU**. It will fail to load if CUDA is not detected.
-*   The first time you run the node for a specific `repo_id`, it will download the model files from Hugging Face Hub, which may take some time. Subsequent runs will use the cached model.
-*   Changing the `repo_id` will trigger a model reload.
+*   The first time you run the node it will download the model files from Hugging Face Hub, which may take some time. Subsequent runs will use the cached model.
 *   The model uses float32 precision internally.
 *   The Descript Audio Codec (DAC) dependency (`descript-audio-codec`) must be installed via `requirements.txt`.
