@@ -6,14 +6,47 @@
   "nodes": [
     {
       "id": 1,
-      "type": "DiaGenerate",
+      "type": "DiaLoader",
       "pos": [
-        600,
-        390
+        340,
+        280
       ],
       "size": [
-        590,
-        380
+        270,
+        60
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "dia_model",
+          "type": "DIA_MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "BobRandomNumber/ComfyUI-DiaTTS",
+        "ver": "cac89de641dc032734691480eb834d74b4822285",
+        "Node name for S&R": "DiaLoader"
+      },
+      "widgets_values": [
+        "Dia-1.6B.safetensors"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "DiaGenerate",
+      "pos": [
+        630,
+        280
+      ],
+      "size": [
+        560,
+        360
       ],
       "flags": {},
       "order": 1,
@@ -35,8 +68,8 @@
         }
       ],
       "properties": {
-        "aux_id": "BobRandomNumber/ComfyUI-DiaTest",
-        "ver": "90df0b65f0d20415fa4e5f1822d50d635b4de990",
+        "aux_id": "BobRandomNumber/ComfyUI-DiaTTS",
+        "ver": "cac89de641dc032734691480eb834d74b4822285",
         "Node name for S&R": "DiaGenerate"
       },
       "widgets_values": [
@@ -52,47 +85,14 @@
       ]
     },
     {
-      "id": 2,
-      "type": "DiaLoader",
-      "pos": [
-        290,
-        390
-      ],
-      "size": [
-        280,
-        58
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "dia_model",
-          "type": "DIA_MODEL",
-          "links": [
-            1
-          ]
-        }
-      ],
-      "properties": {
-        "aux_id": "BobRandomNumber/ComfyUI-DiaTest",
-        "ver": "90df0b65f0d20415fa4e5f1822d50d635b4de990",
-        "Node name for S&R": "DiaLoader"
-      },
-      "widgets_values": [
-        "Dia-1.6B.safetensors"
-      ]
-    },
-    {
       "id": 3,
       "type": "SaveAudio",
       "pos": [
-        1230,
-        390
+        1210,
+        280
       ],
       "size": [
-        280,
+        230,
         112
       ],
       "flags": {},
@@ -118,15 +118,15 @@
   "links": [
     [
       1,
-      2,
-      0,
       1,
+      0,
+      2,
       0,
       "DIA_MODEL"
     ],
     [
       2,
-      1,
+      2,
       0,
       3,
       0,
@@ -137,10 +137,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.0152559799477574,
+      "scale": 1.1167815779425279,
       "offset": [
-        47.473713208179845,
-        -80.62184306933196
+        62.65250316765449,
+        -51.300288201697924
       ]
     },
     "frontendVersion": "1.17.11",
