@@ -60,7 +60,7 @@ class DiaLoader:
     RETURN_TYPES = ("DIA_MODEL",)
     RETURN_NAMES = ("dia_model",)
     FUNCTION = "load_dia_model"
-    CATEGORY = "audio/DiaTest"
+    CATEGORY = "audio/DiaTTS"
 
     def load_dia_model(self, ckpt_name: str):
         """Loads the safetensors weights, combines with embedded config, loads DAC, and prepares the Dia object."""
@@ -163,7 +163,7 @@ class DiaGenerate:
     RETURN_TYPES = ("AUDIO",)
     RETURN_NAMES = ("audio",)
     FUNCTION = "generate_audio"
-    CATEGORY = "audio/DiaTest"
+    CATEGORY = "audio/DiaTTS"
 
     def generate_audio(self, dia_model: Dia, text: str, max_tokens: int, cfg_scale: float, temperature: float, top_p: float, cfg_filter_top_k: int, speed_factor: float, seed: int):
         """Performs TTS generation using the provided Dia model object."""
