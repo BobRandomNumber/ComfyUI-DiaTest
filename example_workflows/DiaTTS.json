@@ -52,40 +52,10 @@
       ]
     },
     {
-      "id": 3,
-      "type": "SaveAudio",
-      "pos": [
-        1240,
-        390
-      ],
-      "size": [
-        280,
-        112
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "audio",
-          "type": "AUDIO",
-          "link": 2
-        }
-      ],
-      "outputs": [],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.30"
-      },
-      "widgets_values": [
-        "audio/DiaTTS"
-      ]
-    },
-    {
       "id": 2,
       "type": "DiaLoader",
       "pos": [
-        280,
+        290,
         390
       ],
       "size": [
@@ -113,6 +83,36 @@
       "widgets_values": [
         "Dia-1.6B.safetensors"
       ]
+    },
+    {
+      "id": 3,
+      "type": "SaveAudio",
+      "pos": [
+        1230,
+        390
+      ],
+      "size": [
+        280,
+        112
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.30"
+      },
+      "widgets_values": [
+        "audio/DiaTTS"
+      ]
     }
   ],
   "links": [
@@ -139,7 +139,7 @@
     "ds": {
       "scale": 1.0152559799477574,
       "offset": [
-        47.47372823767917,
+        47.473713208179845,
         -80.62184306933196
       ]
     },
