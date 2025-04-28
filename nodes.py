@@ -1,4 +1,4 @@
-# ComfyUI-DiaTest/nodes.py
+# ComfyUI-DiaTTS/nodes.py
 
 import os
 import torch
