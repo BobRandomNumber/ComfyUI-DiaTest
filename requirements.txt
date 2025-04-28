@@ -1,4 +1,3 @@
 # ComfyUI-DiaTest/requirements.txt
 
 descript-audio-codec
-huggingface_hub
