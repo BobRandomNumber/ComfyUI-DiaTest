@@ -1,6 +1,7 @@
 # ComfyUI Dia TTS Nodes
 
-This node pack integrates the [Nari-Labs Dia](https://github.com/nari-labs/dia) 1.6b text-to-speech model into ComfyUI using the safetensors file nari-labs provided.
+This node pack partially integrates the [Nari-Labs Dia](https://github.com/nari-labs/dia) 1.6b text-to-speech model into ComfyUI using the safetensors file nari-labs provided.
+This node pack does not have audio prompt yet, on to do list.
 
 Dia allows generating dialogue with speaker tags (`[S1]`, `[S2]`) and non-verbal sounds (`(laughs)`, etc.).
 
