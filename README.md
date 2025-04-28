@@ -20,7 +20,7 @@ It **requires a CUDA-enabled GPU**.
 5.  Navigate to your `ComfyUI/custom_nodes/` directory.
 6.  Clone this repository:
     ```bash
-    git clone https://github.com/BobRandomNumber/ComfyUI-DiaTest.git
+    git clone https://github.com/BobRandomNumber/ComfyUI-DiaTTS.git
     ```
     Alternatively, download the ZIP and extract it into `custom_nodes`.
 7.  Install the required dependencies:
