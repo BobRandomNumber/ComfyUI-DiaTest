@@ -8,6 +8,8 @@ It **requires a CUDA-enabled GPU**.
 
 **Note:** This version is specifically configured for the `nari-labs/Dia-1.6B` model architecture.
 
+![DiaTTS Workflow](https://github.com/BobRandomNumber/ComfyUI-DiaTTS/blob/main/example_workflows/DiaTTS.png)
+
 ## Installation
 
 1.  Ensure you have a CUDA-enabled GPU and the necessary NVIDIA drivers installed.
@@ -63,9 +65,9 @@ Generates audio using a pre-loaded Dia model provided by the `DiaLoader` node. D
 
 ## Usage Example
 
-1.  Add the `Dia 1.6b Loader` node from the `audio/DiaTest` category.
+1.  Add the `Dia 1.6b Loader` node from the `audio/DiaTTS` category.
 2.  Select your Dia model file (e.g., `dia-1.6B.safetensors`) from the `ckpt_name` dropdown.
-3.  Add the `Dia TTS Generate` node (also from `audio/DiaTest`).
+3.  Add the `Dia TTS Generate` node (also from `audio/DiaTTS`).
 4.  Connect the `dia_model` output of the Loader node to the `dia_model` input of the Generate node.
 5.  Enter your dialogue script into the `text` input on the Generate node.
    
@@ -85,3 +87,8 @@ Generates audio using a pre-loaded Dia model provided by the `DiaLoader` node. D
 *   Only the `.safetensors` weights file is required.
 *   The first run of the nodes descript-audio-codec may take slightly longer. Subsequent runs will be faster.
 *   Dependencies `descript-audio-codec` must be installed via `requirements.txt`.
+
+## To Do
+
+- [x] Remove huggingface download and add safetensor support
+- [ ] add audio propmpt support
