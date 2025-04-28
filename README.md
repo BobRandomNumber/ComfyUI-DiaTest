@@ -31,11 +31,11 @@ It **requires a CUDA-enabled GPU**.
 
 ### Dia 1.6b Loader (`DiaLoader`)
 
-Loads the Dia-1.6B TTS model from a local `.safetensors` file located in your `diffusion_models` directorie. Loads the model weights and the required DAC codec onto the GPU.
+Loads the Dia-1.6B TTS model from a local `.safetensors` file located in your `diffusion_models` directory. Loads the model weights and the required DAC codec onto the GPU.
 
 **Inputs:**
 
-*   `ckpt_name`: Dropdown list of found `.safetensors` files within your `diffusion_models` directorie. Select the file corresponding to the Dia-1.6B model.
+*   `ckpt_name`: Dropdown list of found `.safetensors` files within your `diffusion_models` directory. Select the file corresponding to the Dia-1.6B model.
 
 **Outputs:**
 
