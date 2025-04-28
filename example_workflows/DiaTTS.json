@@ -1,0 +1,153 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "revision": 0,
+  "last_node_id": 3,
+  "last_link_id": 2,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "DiaGenerate",
+      "pos": [
+        600,
+        390
+      ],
+      "size": [
+        590,
+        380
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "dia_model",
+          "type": "DIA_MODEL",
+          "link": 1
+        }
+      ],
+      "outputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "links": [
+            2
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "BobRandomNumber/ComfyUI-DiaTest",
+        "ver": "90df0b65f0d20415fa4e5f1822d50d635b4de990",
+        "Node name for S&R": "DiaGenerate"
+      },
+      "widgets_values": [
+        "[S1] Hey, have you heard about the new TTS model Dia? It's supposed to be amazing!\n[S2] Really? I've been so busy with work, I haven't checked it out yet.\n[S3] (laughs) Well, she sounds incredibly human-like. You won't believe how natural her voice is.\n[S4] That's impressive. Does it handle different emotions well?\n[S1] Oh yeah! She can switch between happy, sad, angry—pretty much anything you throw at her.\n[S2] Sounds like a game changer for the industry.\n[S3] Absolutely. It could revolutionize how we interact with AI in everyday life.\n[S4] I wonder if it's available for public use yet?\n[S1] Not sure, but I'm keeping an eye out. Can't wait to try it myself!",
+        3070,
+        3,
+        1.3,
+        0.95,
+        30,
+        0.8800000000000001,
+        57,
+        "fixed"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "SaveAudio",
+      "pos": [
+        1240,
+        390
+      ],
+      "size": [
+        280,
+        112
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "link": 2
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.30"
+      },
+      "widgets_values": [
+        "audio/DiaTTS"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "DiaLoader",
+      "pos": [
+        280,
+        390
+      ],
+      "size": [
+        280,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "dia_model",
+          "type": "DIA_MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "BobRandomNumber/ComfyUI-DiaTest",
+        "ver": "90df0b65f0d20415fa4e5f1822d50d635b4de990",
+        "Node name for S&R": "DiaLoader"
+      },
+      "widgets_values": [
+        "Dia-1.6B.safetensors"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      2,
+      0,
+      1,
+      0,
+      "DIA_MODEL"
+    ],
+    [
+      2,
+      1,
+      0,
+      3,
+      0,
+      "AUDIO"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 1.0152559799477574,
+      "offset": [
+        47.47372823767917,
+        -80.62184306933196
+      ]
+    },
+    "frontendVersion": "1.17.11",
+    "VHS_latentpreview": true,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
