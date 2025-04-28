@@ -5,39 +5,6 @@
   "last_link_id": 2,
   "nodes": [
     {
-      "id": 2,
-      "type": "DiaLoader",
-      "pos": [
-        280,
-        390
-      ],
-      "size": [
-        280,
-        58
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "dia_model",
-          "type": "DIA_MODEL",
-          "links": [
-            1
-          ]
-        }
-      ],
-      "properties": {
-        "aux_id": "BobRandomNumber/ComfyUI-DiaTest",
-        "ver": "90df0b65f0d20415fa4e5f1822d50d635b4de990",
-        "Node name for S&R": "DiaLoader"
-      },
-      "widgets_values": [
-        "Dia-1.6B.safetensors"
-      ]
-    },
-    {
       "id": 1,
       "type": "DiaGenerate",
       "pos": [
@@ -45,8 +12,8 @@
         390
       ],
       "size": [
-        460,
-        430
+        590,
+        380
       ],
       "flags": {},
       "order": 1,
@@ -88,7 +55,7 @@
       "id": 3,
       "type": "SaveAudio",
       "pos": [
-        1090,
+        1240,
         390
       ],
       "size": [
@@ -112,6 +79,39 @@
       },
       "widgets_values": [
         "audio/DiaTTS"
+      ]
+    },
+    {
+      "id": 2,
+      "type": "DiaLoader",
+      "pos": [
+        280,
+        390
+      ],
+      "size": [
+        280,
+        58
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "dia_model",
+          "type": "DIA_MODEL",
+          "links": [
+            1
+          ]
+        }
+      ],
+      "properties": {
+        "aux_id": "BobRandomNumber/ComfyUI-DiaTest",
+        "ver": "90df0b65f0d20415fa4e5f1822d50d635b4de990",
+        "Node name for S&R": "DiaLoader"
+      },
+      "widgets_values": [
+        "Dia-1.6B.safetensors"
       ]
     }
   ],
@@ -137,10 +137,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.2284597357367866,
+      "scale": 1.0152559799477574,
       "offset": [
-        44.411603926356264,
-        -186.08401740634102
+        47.47372823767917,
+        -80.62184306933196
       ]
     },
     "frontendVersion": "1.17.11",
