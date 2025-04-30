@@ -1,0 +1,15 @@
+[project]
+name = "comfyui-diatts"
+description = "An implementation of Nari-Labs Dia TTS"
+version = "0.3.0"
+license = {file = "LICENSE"}
+dependencies = ["descript-audio-codec"]
+
+[project.urls]
+Repository = "https://github.com/BobRandomNumber/ComfyUI-DiaTTS"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = "bobrandomnumber"
+DisplayName = "ComfyUI-DiaTTS"
+Icon = ""
