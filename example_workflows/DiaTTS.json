@@ -56,6 +56,12 @@
           "name": "dia_model",
           "type": "DIA_MODEL",
           "link": 1
+        },
+        {
+          "name": "audio_prompt",
+          "shape": 7,
+          "type": "AUDIO",
+          "link": null
         }
       ],
       "outputs": [
@@ -137,10 +143,10 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 1.1167815779425279,
+      "scale": 1.1346575342465761,
       "offset": [
-        62.65250316765449,
-        -51.300288201697924
+        24.892625008442675,
+        -49.90183910857781
       ]
     },
     "frontendVersion": "1.17.11",

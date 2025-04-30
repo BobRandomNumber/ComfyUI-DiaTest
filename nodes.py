@@ -8,6 +8,7 @@ import traceback
 import gc
 from safetensors.torch import load_file as load_safetensors_file
 import comfy.utils
+import torchaudio # Needed for potential resampling in encode_audio_prompt
 
 # --- Import Dia library components ---
 try:
@@ -78,7 +79,7 @@ class DiaLoader:
              if not found: raise FileNotFoundError(f"Checkpoint file '{ckpt_name}' not found.")
 
         device = get_torch_device()
-        compute_dtype = torch.float32
+        compute_dtype = torch.float32 # Dia currently configured for float32 compute
 
         current_key = (ckpt_path, str(compute_dtype), str(device))
 
@@ -115,20 +116,23 @@ class DiaLoader:
             except Exception as config_e: print(f"DiaLoader: Error validating embedded config: {config_e}"); raise config_e
 
             print(f"DiaLoader: Instantiating Dia model on device={device}...")
+            # Pass compute dtype string directly
             dia_object = Dia(config, compute_dtype=str(compute_dtype).split('.')[-1], device=device)
 
             print(f"DiaLoader: Loading model weights from: {ckpt_path}")
             try:
+                # Load directly to target device to save memory
                 state_dict = load_safetensors_file(ckpt_path, device=str(device))
                 missing_keys, unexpected_keys = dia_object.model.load_state_dict(state_dict, strict=True)
                 if missing_keys: print(f"DiaLoader: Warning - Missing keys in state_dict: {missing_keys}")
                 if unexpected_keys: print(f"DiaLoader: Warning - Unexpected keys in state_dict: {unexpected_keys}")
                 print("DiaLoader: Model weights loaded successfully.")
-                del state_dict; gc.collect()
+                del state_dict; gc.collect() # Clean up state dict
             except Exception as e:
                 print(f"DiaLoader: Error loading state_dict: {e}"); traceback.print_exc()
                 raise e
 
+            # Load DAC model after main model to ensure correct device placement context
             try: dia_object._load_dac_model()
             except Exception as dac_e: print(f"DiaLoader: Error loading required DAC model: {dac_e}"); traceback.print_exc(); raise dac_e
 
@@ -142,22 +146,29 @@ class DiaLoader:
 
 
 class DiaGenerate:
-    """Generates audio using a pre-loaded Dia TTS model."""
+    """Generates audio using a pre-loaded Dia TTS model, optionally with an audio prompt."""
     @classmethod
     def INPUT_TYPES(s):
         """Defines the inputs for audio generation."""
         return {
             "required": {
                 "dia_model": ("DIA_MODEL",),
-                "text": ("STRING", {"multiline": True, "dynamicPrompts": False, "default": "[S1] Hello world. [S2] This is a test."}),
+                "text": ("STRING", {
+                    "multiline": True,
+                    "dynamicPrompts": False,
+                    "default": ""
+                }),
                 "max_tokens": ("INT", {"default": 1720, "min": 860, "max": 3072, "step": 10}),
                 "cfg_scale": ("FLOAT", {"default": 3.0, "min": 1.0, "max": 7.0, "step": 0.1}),
                 "temperature": ("FLOAT", {"default": 1.3, "min": 0.1, "max": 1.5, "step": 0.05}),
                 "top_p": ("FLOAT", {"default": 0.95, "min": 0.1, "max": 1.0, "step": 0.01}),
-                "cfg_filter_top_k": ("INT", {"default": 35, "min": 1, "max": 100, "step": 1}),
+                "cfg_filter_top_k": ("INT", {"default": 32, "min": 1, "max": 100, "step": 1}),
                 "speed_factor": ("FLOAT", {"default": 0.94, "min": 0.5, "max": 1.5, "step": 0.01}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             },
+             "optional": {
+                "audio_prompt": ("AUDIO",), # Optional audio prompt input
+             }
         }
 
     RETURN_TYPES = ("AUDIO",)
@@ -165,12 +176,15 @@ class DiaGenerate:
     FUNCTION = "generate_audio"
     CATEGORY = "audio/DiaTTS"
 
-    def generate_audio(self, dia_model: Dia, text: str, max_tokens: int, cfg_scale: float, temperature: float, top_p: float, cfg_filter_top_k: int, speed_factor: float, seed: int):
-        """Performs TTS generation using the provided Dia model object."""
+    def generate_audio(self, dia_model: Dia, text: str, max_tokens: int, cfg_scale: float, temperature: float, top_p: float, cfg_filter_top_k: int, speed_factor: float, seed: int, audio_prompt=None):
+        """
+        Performs TTS generation. If audio_prompt is provided, the 'text' input
+        should contain the transcript of the audio_prompt followed by the text to generate.
+        """
         if dia_model is None: raise ValueError("Dia model object is required.")
         if not isinstance(dia_model, Dia): raise TypeError("Invalid object passed as dia_model.")
         if dia_model.model is None: raise ValueError("Dia object missing model.")
-        if dia_model.dac_model is None: raise RuntimeError("Dia object missing DAC model.")
+        # DAC model loading is handled internally by encode_audio_prompt or generate if needed
 
         exec_device = dia_model.device
         if exec_device.type == 'cuda' and not torch.cuda.is_available():
@@ -183,51 +197,114 @@ class DiaGenerate:
 
         if not text or text.isspace(): raise ValueError("Input text cannot be empty.")
 
+        # --- Handle Optional Audio Prompt ---
+        encoded_audio_prompt = None
+        if audio_prompt is not None:
+            waveform = audio_prompt.get('waveform')
+            sample_rate = audio_prompt.get('sample_rate')
+            if waveform is not None and sample_rate is not None:
+                # Ensure DAC is loaded before encoding
+                if not dia_model.dac_model:
+                    try: dia_model._load_dac_model()
+                    except Exception as dac_e:
+                        print(f"DiaGenerate: Error loading DAC model for prompt encoding: {dac_e}")
+                        raise dac_e
+
+                print("DiaGenerate: Encoding provided audio prompt...")
+                try:
+                    # Make sure waveform is float32 for DAC/resampling
+                    if waveform.dtype != torch.float32:
+                        waveform = waveform.to(torch.float32)
+                        # Normalize if it was int type
+                        original_dtype = audio_prompt.get('waveform').dtype
+                        if not torch.is_floating_point(original_dtype):
+                            max_val = torch.iinfo(original_dtype).max
+                            waveform = waveform / max_val
+
+                    encoded_audio_prompt = dia_model.encode_audio_prompt(waveform, sample_rate)
+                    print(f"DiaGenerate: Audio prompt encoded successfully, shape: {encoded_audio_prompt.shape}")
+                    print("DiaGenerate: Using the 'text' input directly as combined prompt transcript + generation text.")
+
+                except Exception as encode_e:
+                    print(f"DiaGenerate: Warning - Failed to encode audio prompt: {encode_e}")
+                    traceback.print_exc()
+                    encoded_audio_prompt = None # Proceed without prompt if encoding fails
+            else:
+                 print("DiaGenerate: Warning - Invalid audio_prompt dictionary received (missing waveform or sample_rate). Ignoring prompt.")
+
+        # The 'text' input is used directly whether or not a prompt is provided
+        text_for_generate = text
+
+        # --- Set Seed ---
         MAX_SEED_NUMPY = 2**32 - 1
         seed_torch = seed; seed_numpy = seed % MAX_SEED_NUMPY
         torch.manual_seed(seed_torch); np.random.seed(seed_numpy)
         if exec_device.type == 'cuda': torch.cuda.manual_seed_all(seed_torch)
 
-        text_for_generate = text
-
         # --- Progress Bar Setup ---
-        # The total number of steps is max_tokens (or slightly less if EOS is hit early)
         pbar = comfy.utils.ProgressBar(max_tokens)
 
         try:
             print(f"DiaGenerate: Starting generation on {exec_device}...")
-            # Pass the progress bar object to the generate method
+            # Pass the encoded prompt tensor (or None) to the generate method
             output_np = dia_model.generate(
-                text=text_for_generate, max_tokens=max_tokens, cfg_scale=cfg_scale, temperature=temperature,
-                top_p=top_p, cfg_filter_top_k=cfg_filter_top_k, use_torch_compile=False, verbose=True,
-                pbar=pbar # Pass pbar object here
+                text=text_for_generate,
+                max_tokens=max_tokens,
+                cfg_scale=cfg_scale,
+                temperature=temperature,
+                top_p=top_p,
+                cfg_filter_top_k=cfg_filter_top_k,
+                use_torch_compile=False, # Keep False for ComfyUI stability
+                verbose=True, # Enable Dia's internal verbose logging
+                audio_prompt=encoded_audio_prompt, # Pass the encoded tensor or None
+                pbar=pbar # Pass ComfyUI pbar object
             )
 
             if output_np is None or output_np.size == 0:
                 print("DiaGenerate: Warning - Generation returned empty. Outputting silence.")
-                silent_tensor = torch.zeros((1, 1, DEFAULT_SAMPLE_RATE), dtype=torch.float32)
+                silent_tensor = torch.zeros((1, 1, DEFAULT_SAMPLE_RATE), dtype=torch.float32) # Shape [1, 1, T]
                 return ({'waveform': silent_tensor, 'sample_rate': DEFAULT_SAMPLE_RATE},)
 
+            # --- Speed Factor Adjustment ---
             if speed_factor != 1.0:
-                speed_factor = max(0.1, min(speed_factor, 5.0))
+                speed_factor = max(0.1, min(speed_factor, 5.0)) # Clamp speed factor
                 original_len = len(output_np)
                 target_len = int(original_len / speed_factor)
                 if target_len > 0 and target_len != original_len:
                     print(f"DiaGenerate: Applying speed factor {speed_factor:.2f}x")
+                    # Ensure float dtype for interpolation
+                    if not np.issubdtype(output_np.dtype, np.floating):
+                        output_np = output_np.astype(np.float32)
+
                     x_original = np.arange(original_len)
                     x_resampled = np.linspace(0, original_len - 1, target_len)
-                    if not np.issubdtype(output_np.dtype, np.floating): output_np = output_np.astype(np.float32)
                     resampled_audio_np = np.interp(x_resampled, x_original, output_np)
-                    output_np = resampled_audio_np
+                    output_np = resampled_audio_np # Use the resampled audio
+                elif target_len == 0:
+                     print(f"DiaGenerate: Warning - Speed factor {speed_factor:.2f}x results in zero length audio. Skipping adjustment.")
+                else:
+                     # No change in length or factor is 1.0
+                     pass
 
+            # --- Format Output for ComfyUI ---
             try:
+                # Convert final numpy array to tensor
                 output_tensor = torch.from_numpy(output_np.astype(np.float32))
-                if output_tensor.ndim == 1: output_tensor = output_tensor.unsqueeze(0)
-                elif output_tensor.ndim != 2: raise ValueError(f"Unexpected audio dim: {output_tensor.ndim}.")
-                output_tensor = output_tensor.unsqueeze(0).contiguous()
+                # Ensure correct shape [Batch, Channels, Samples] - Dia output is mono.
+                if output_tensor.ndim == 1: # [T] -> [1, 1, T]
+                    output_tensor = output_tensor.unsqueeze(0).unsqueeze(0)
+                elif output_tensor.ndim == 2 and output_tensor.shape[0] == 1: # [1, T] -> [1, 1, T]
+                    output_tensor = output_tensor.unsqueeze(1)
+                elif output_tensor.ndim != 3 or output_tensor.shape[0] != 1 or output_tensor.shape[1] != 1:
+                     raise ValueError(f"Unexpected intermediate audio tensor shape: {output_tensor.shape}. Expected mono audio resulting in [1, 1, T].")
+
+                output_tensor = output_tensor.contiguous()
+
                 print(f"DiaGenerate: Final audio tensor shape: {output_tensor.shape}, Sample Rate: {DEFAULT_SAMPLE_RATE}")
                 if len(output_tensor.shape) != 3: raise ValueError("Final tensor dim not 3!")
-                if output_tensor.shape[1] == 0 or output_tensor.shape[2] == 0: raise ValueError("Final tensor zero dim!")
+                if output_tensor.shape[0] == 0 or output_tensor.shape[1] == 0 or output_tensor.shape[2] == 0:
+                    raise ValueError(f"Final tensor has a zero dimension: {output_tensor.shape}")
+
                 result = {'waveform': output_tensor, 'sample_rate': DEFAULT_SAMPLE_RATE}
                 return (result,)
             except Exception as format_e:
@@ -237,6 +314,11 @@ class DiaGenerate:
             print(f"DiaGenerate: Error during generation: {e}")
             traceback.print_exc()
             raise e
+        finally:
+            # Clean up CUDA cache if needed after generation
+            if exec_device.type == 'cuda':
+                gc.collect()
+                torch.cuda.empty_cache()
 
 
 # --- Node Mappings ---
