@@ -156,13 +156,13 @@ class DiaGenerate:
                 "text": ("STRING", {
                     "multiline": True,
                     "dynamicPrompts": False,
-                    "default": "[S1] Hello world. [S2] This is a test."
+                    "default": ""
                 }),
                 "max_tokens": ("INT", {"default": 1720, "min": 860, "max": 3072, "step": 10}),
                 "cfg_scale": ("FLOAT", {"default": 3.0, "min": 1.0, "max": 7.0, "step": 0.1}),
                 "temperature": ("FLOAT", {"default": 1.3, "min": 0.1, "max": 1.5, "step": 0.05}),
                 "top_p": ("FLOAT", {"default": 0.95, "min": 0.1, "max": 1.0, "step": 0.01}),
-                "cfg_filter_top_k": ("INT", {"default": 35, "min": 1, "max": 100, "step": 1}),
+                "cfg_filter_top_k": ("INT", {"default": 32, "min": 1, "max": 100, "step": 1}),
                 "speed_factor": ("FLOAT", {"default": 0.94, "min": 0.5, "max": 1.5, "step": 0.01}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             },
