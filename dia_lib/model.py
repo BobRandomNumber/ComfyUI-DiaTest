@@ -61,7 +61,9 @@ def _sample_next_token(logits_BCxV, temperature, top_p, cfg_filter_top_k=None) -
 
 class ComputeDtype(str, Enum):
     """Enum for compute dtypes."""
-    FLOAT32 = "float32"; FLOAT16 = "float16"; BFLOAT16 = "bfloat16"
+    FLOAT32 = "float32"
+    FLOAT16 = "float16"
+    BFLOAT16 = "bfloat16"
     def to_dtype(self) -> torch.dtype:
         """Converts enum value to torch.dtype."""
         return getattr(torch, self.value)
@@ -126,7 +128,8 @@ class Dia:
 
     def _prepare_text_input(self, text: str) -> torch.Tensor:
         """Encodes text prompt, pads, and creates tensor on the model's device."""
-        text_pad_value = self.config.data.text_pad_value; max_len = self.config.data.text_length
+        text_pad_value = self.config.data.text_pad_value
+        max_len = self.config.data.text_length
         try:
             byte_text = text.encode("utf-8")
             replaced_bytes = byte_text.replace(b"[S1]", b"\x01").replace(b"[S2]", b"\x02")
@@ -185,8 +188,10 @@ class Dia:
 
     def _prepare_audio_prompt(self, audio_prompt_codes: torch.Tensor | None) -> tuple[torch.Tensor, int]:
         """Prepares the initial audio tokens (BOS and optional prompt codes) on the model's device."""
-        num_channels = self.config.data.channels; audio_bos_value = self.config.data.audio_bos_value
-        audio_pad_value = self.config.data.audio_pad_value; delay_pattern = self.config.data.delay_pattern
+        num_channels = self.config.data.channels
+        audio_bos_value = self.config.data.audio_bos_value
+        audio_pad_value = self.config.data.audio_pad_value
+        delay_pattern = self.config.data.delay_pattern
         max_delay_pattern = max(delay_pattern)
 
         prefill = torch.full((1, num_channels), fill_value=audio_bos_value, dtype=torch.int, device=self.device)
@@ -264,8 +269,10 @@ class Dia:
             if not self._devices_equal(dac_device, self.device): self.dac_model.to(self.device)
         except StopIteration: raise RuntimeError("DAC model has no parameters after load attempt.")
 
-        num_channels = self.config.data.channels; seq_length = generated_codes.shape[0]
-        delay_pattern = self.config.data.delay_pattern; audio_pad_value = self.config.data.audio_pad_value
+        num_channels = self.config.data.channels
+        seq_length = generated_codes.shape[0]
+        delay_pattern = self.config.data.delay_pattern
+        audio_pad_value = self.config.data.audio_pad_value
         max_delay_pattern = max(delay_pattern)
 
         # Pass the device of generated_codes to build_revert_indices
@@ -280,7 +287,8 @@ class Dia:
         codebook_reverted = revert_audio_delay(codebook_delayed, audio_pad_value, revert_precomp, seq_length)
         codebook_trimmed = codebook_reverted[:, :-max_delay_pattern, :]
 
-        min_valid_index = 0; max_valid_index = 1023
+        min_valid_index = 0
+        max_valid_index = 1023
         invalid_mask = (codebook_trimmed < min_valid_index) | (codebook_trimmed > max_valid_index)
         if torch.any(invalid_mask):
              print(f"Warning: Clamping {torch.sum(invalid_mask)} invalid codebook indices to 0.")
@@ -300,7 +308,8 @@ class Dia:
                  pbar=None
                  ) -> np.ndarray | None:
         """Generates audio waveform from text input, updating progress bars."""
-        audio_eos_value = self.config.data.audio_eos_value; audio_pad_value = self.config.data.audio_pad_value
+        audio_eos_value = self.config.data.audio_eos_value
+        audio_pad_value = self.config.data.audio_pad_value
         delay_pattern = self.config.data.delay_pattern
         clamped_max_tokens = self.config.data.audio_length if max_tokens is None else min(max_tokens, self.config.data.audio_length)
         max_delay_pattern = max(delay_pattern)
@@ -309,7 +318,9 @@ class Dia:
         dec_state, dec_output = self._prepare_generation(text, audio_prompt, verbose)
         dec_step = dec_output.prefill_step - 1
 
-        bos_countdown = max_delay_pattern; eos_detected = False; eos_countdown = -1
+        bos_countdown = max_delay_pattern
+        eos_detected = False
+        eos_countdown = -1
         step_fn = torch.compile(self._decoder_step, mode="default") if use_torch_compile else self._decoder_step
 
         tqdm_pbar = None
@@ -326,11 +337,13 @@ class Dia:
             if (not eos_detected and pred_C[0] == audio_eos_value) or is_last_generatable_step:
                 if not eos_detected:
                      if verbose: print(f"\nEOS detected at step {dec_step + 1}.")
-                     eos_detected = True; eos_countdown = max_delay_pattern
+                     eos_detected = True
+                     eos_countdown = max_delay_pattern
                 if is_last_generatable_step and not eos_detected:
                      if verbose: print(f"\nApproaching max_tokens ({clamped_max_tokens}), forcing EOS generation.")
                      pred_C[0] = audio_eos_value
-                     eos_detected = True; eos_countdown = max_delay_pattern
+                     eos_detected = True
+                     eos_countdown = max_delay_pattern
 
             if eos_countdown > 0:
                 step_after_eos = max_delay_pattern - eos_countdown

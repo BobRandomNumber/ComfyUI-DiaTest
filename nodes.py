@@ -75,7 +75,9 @@ class DiaLoader:
              for directory in folder_paths.get_folder_paths("diffusion_models"):
                  potential_path = os.path.join(directory, ckpt_name)
                  if os.path.exists(potential_path):
-                     ckpt_path = potential_path; found = True; break
+                     ckpt_path = potential_path
+                     found = True
+                     break
              if not found: raise FileNotFoundError(f"Checkpoint file '{ckpt_name}' not found.")
 
         device = get_torch_device()
@@ -101,7 +103,8 @@ class DiaLoader:
             if dia_object.dac_model is None:
                  print("DiaLoader: Cached object missing DAC model, attempting reload...")
                  try: dia_object._load_dac_model()
-                 except Exception as dac_e: print(f"DiaLoader: Error loading DAC model for cached object: {dac_e}"); raise dac_e
+                 except Exception as dac_e: print(f"DiaLoader: Error loading DAC model for cached object: {dac_e}")
+                 raise dac_e
             elif not dia_object.model._devices_equal(dia_object.dac_model.device, device):
                  print(f"DiaLoader: Moving cached DAC from {dia_object.dac_model.device} to {device}.")
                  try: dia_object.dac_model.to(device)
@@ -109,11 +112,15 @@ class DiaLoader:
         else:
             if loaded_dia_objects:
                  print(f"DiaLoader: Different model requested ('{ckpt_name}'). Clearing cache.")
-                 loaded_dia_objects.clear(); gc.collect(); torch.cuda.empty_cache()
+                 loaded_dia_objects.clear()
+                 gc.collect()
+                 torch.cuda.empty_cache()
 
             print(f"DiaLoader: Loading Dia-1.6B model configuration...")
             try: config = DiaConfig.model_validate(DEFAULT_DIA_1_6B_CONFIG)
-            except Exception as config_e: print(f"DiaLoader: Error validating embedded config: {config_e}"); raise config_e
+            except Exception as config_e:
+                print(f"DiaLoader: Error validating embedded config: {config_e}")
+                raise config_e
 
             print(f"DiaLoader: Instantiating Dia model on device={device}...")
             # Pass compute dtype string directly
@@ -127,14 +134,19 @@ class DiaLoader:
                 if missing_keys: print(f"DiaLoader: Warning - Missing keys in state_dict: {missing_keys}")
                 if unexpected_keys: print(f"DiaLoader: Warning - Unexpected keys in state_dict: {unexpected_keys}")
                 print("DiaLoader: Model weights loaded successfully.")
-                del state_dict; gc.collect() # Clean up state dict
+                del state_dict
+                gc.collect() # Clean up state dict
             except Exception as e:
-                print(f"DiaLoader: Error loading state_dict: {e}"); traceback.print_exc()
+                print(f"DiaLoader: Error loading state_dict: {e}")
+                traceback.print_exc()
                 raise e
 
             # Load DAC model after main model to ensure correct device placement context
             try: dia_object._load_dac_model()
-            except Exception as dac_e: print(f"DiaLoader: Error loading required DAC model: {dac_e}"); traceback.print_exc(); raise dac_e
+            except Exception as dac_e:
+                print(f"DiaLoader: Error loading required DAC model: {dac_e}")
+                traceback.print_exc()
+                raise dac_e
 
             dia_object.model.eval()
             if dia_object.dac_model: dia_object.dac_model.eval()
@@ -237,8 +249,10 @@ class DiaGenerate:
 
         # --- Set Seed ---
         MAX_SEED_NUMPY = 2**32 - 1
-        seed_torch = seed; seed_numpy = seed % MAX_SEED_NUMPY
-        torch.manual_seed(seed_torch); np.random.seed(seed_numpy)
+        seed_torch = seed
+        seed_numpy = seed % MAX_SEED_NUMPY
+        torch.manual_seed(seed_torch)
+        np.random.seed(seed_numpy)
         if exec_device.type == 'cuda': torch.cuda.manual_seed_all(seed_torch)
 
         # --- Progress Bar Setup ---
@@ -308,7 +322,9 @@ class DiaGenerate:
                 result = {'waveform': output_tensor, 'sample_rate': DEFAULT_SAMPLE_RATE}
                 return (result,)
             except Exception as format_e:
-                print(f"DiaGenerate: Error formatting output: {format_e}"); traceback.print_exc(); raise format_e
+                print(f"DiaGenerate: Error formatting output: {format_e}")
+                traceback.print_exc()
+                raise format_e
 
         except Exception as e:
             print(f"DiaGenerate: Error during generation: {e}")
