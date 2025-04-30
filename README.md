@@ -1,6 +1,6 @@
 # ComfyUI Dia TTS Nodes
 
-This experimental WIP node pack integrates the [Nari-Labs Dia](https://github.com/nari-labs/dia) 1.6b text-to-speech model into ComfyUI using safetensors.
+This is an experimental WIP node pack that integrates the [Nari-Labs Dia](https://github.com/nari-labs/dia) 1.6b text-to-speech model into ComfyUI using safetensors.
 
 Dia allows generating dialogue with speaker tags (`[S1]`, `[S2]`) and non-verbal sounds (`(laughs)`, etc.). It also supports **audio prompting** for voice cloning or style transfer.
 
@@ -104,7 +104,7 @@ Generates audio using a pre-loaded Dia model provided by the `DiaLoader` node. D
 ## Notes
 
 *   This node pack **requires a CUDA-enabled GPU**.
-*   Only the `.safetensors` weights file for Dia-1.6B is required. The configuration is hardcoded.
+*   The `.safetensors` weights file for Dia-1.6B is required.
 *   The first time you run the node, the `descript-audio-codec` model will be downloaded automatically. Subsequent runs will be faster.
 *   Dependency `descript-audio-codec` must be installed via `requirements.txt`.
 *   When using `audio_prompt`, ensure the provided `text` input correctly includes the prompt's transcript first. The model uses this text alignment to understand the audio prompt.
