@@ -108,3 +108,4 @@ Generates audio using a pre-loaded Dia model provided by the `DiaLoader` node. D
 *   The first time you run the node, the `descript-audio-codec` model will be downloaded automatically. Subsequent runs will be faster.
 *   Dependency `descript-audio-codec` must be installed via `requirements.txt`.
 *   When using `audio_prompt`, ensure the provided `text` input correctly includes the prompt's transcript first. The model uses this text alignment to understand the audio prompt.
+*   WARNING `descript-audio-codec` will install `protobuf >= 3.19.6, != 4.24.0, < 5.0.0` as a subdependancy. A user reported it installed 3.19.6 and caused errors in other nodes. This would occur if an old version is in PIP cache, if none were it would install 4.25.8.
